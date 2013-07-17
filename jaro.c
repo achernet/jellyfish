@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include "jellyfish.h"
 
 #define NOTNUM(c)   ((c>57) || (c<48))
@@ -138,4 +139,11 @@ double jaro_winkler(const char *ying, const char *yang, bool long_tolerance)
 double jaro_distance(const char *ying, const char *yang)
 {
     return _jaro_winkler(ying, yang, false, false);
+}
+
+float jaro_average(const char* ying, const char* yang)
+{
+	double winkler_metric = jaro_winkler(ying, yang, false);
+	double distance_metric = jaro_distance(ying, yang);
+	return 0.5f * (winkler_metric + distance_metric);
 }

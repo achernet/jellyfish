@@ -3,6 +3,10 @@ from setuptools import setup, Extension
 
 long_description = open('README.rst').read()
 
+SOURCES = ['jellyfishmodule.c', 'jaro.c', 'hamming.c', 'levenshtein.c',
+           'nysiis.c', 'damerau_levenshtein.c', 'mra.c', 'soundex.c',
+           'metaphone.c', 'porter.c']
+
 setup(name="jellyfish",
       version="0.2.0",
       platforms=["any"],
@@ -17,8 +21,6 @@ setup(name="jellyfish",
                    "Operating System :: OS Independent",
                    "Programming Language :: Python",
                    "Topic :: Text Processing :: Linguistic"],
-      ext_modules=[Extension("jellyfish", ['jellyfishmodule.c', 'jaro.c',
-                                           'hamming.c', 'levenshtein.c',
-                                           'damerau_levenshtein.c', 'mra.c',
-                                           'soundex.c', 'metaphone.c',
-                                           'nysiis.c', 'porter.c'])])
+      ext_modules=[Extension(name="jellyfish",
+                             sources=SOURCES,
+                             extra_compile_args=["-O3", "-std=c11"])])

@@ -96,6 +96,25 @@ static PyObject * jellyfish_jaro_distance(PyObject *self, PyObject *args,
     return Py_BuildValue("d", result);
 }
 
+static PyObject* jellyfish_jaro_average(PyObject* self, PyObject* args, PyObject* keywds)
+{
+    const char* s1;
+    const char* s2;
+
+    if (!PyArg_ParseTuple(args, "ss", &s1, &s2))
+    {
+        return NULL;
+    }
+
+    float result = jaro_average(s1, s2);
+    if (isnanf(result))
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+    return Py_BuildValue("f", result);
+}
+
 static PyObject * jellyfish_hamming_distance(PyObject *self, PyObject *args,
                                           PyObject *keywds)
 {
@@ -323,6 +342,10 @@ static PyMethodDef jellyfish_methods[] = {
     {"jaro_distance", jellyfish_jaro_distance, METH_VARARGS,
      "jaro_distance(string1, string2, ignore_case=True)\n\n"
      "Get a Jaro string distance metric for string1 and string2."},
+
+    {"jaro_average", jellyfish_jaro_average, METH_VARARGS,
+     "jaro_average(string1, string2, ignore_case=True)\n\n"
+         "Get the average Jaro metric for string1 and string2."},
 
     {"hamming_distance", jellyfish_hamming_distance, METH_VARARGS,
      "hamming_distance(string1, string2, ignore_case=True)\n\n"
