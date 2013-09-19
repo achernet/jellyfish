@@ -10,7 +10,7 @@ with open("VERSION", "r") as f:
 
 SOURCES = ['jellyfishmodule.c', 'jaro.c', 'hamming.c', 'levenshtein.c',
            'nysiis.c', 'damerau_levenshtein.c', 'mra.c', 'soundex.c',
-           'metaphone.c', 'porter.c', 'regex_demo.c']
+           'metaphone.c', 'porter.c']
 
 COMPILE_ARGS = ["-O3", "-std=c11", "-pg", "-fprofile-arcs", "-ftest-coverage"]
 
