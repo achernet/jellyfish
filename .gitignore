@@ -6,3 +6,4 @@ strfry.egg-info/
 *.pyc
 *.DS_Store
 *~
+/Default
