@@ -12,26 +12,21 @@
 #define NaN (0.0 / 0.0)
 #endif
 
-/* borrowed heavily from strcmp95.c
+/**
+ * Calculate the Jaro and/or Jaro-Winkler metrics for the two strings ying and yang.
+ *
+ * @param long_tolerance: Increase the probability of a match when the number of matched characters is large.
+ * This option allows for a little more tolerance when the strings are large. It is not an appropriate test
+ * when comparing fixed-length fields such as phone or social security numbers (which should be regex
+ * comparisons anyway!).
+ *
+ * borrowed heavily from strcmp95.c
  *    http://www.census.gov/geo/msb/stand/strcmp.c
  */
-double _jaro_winkler(const char *ying, const char *yang,
-                     bool long_tolerance, bool winklerize)
+double _jaro_winkler(const char *ying, const char *yang, bool long_tolerance, bool winklerize)
 {
-    /* Arguments:
-
-       ying
-       yang
-         pointers to the 2 strings to be compared.
-
-       long_tolerance
-         Increase the probability of a match when the number of matched
-         characters is large.  This option allows for a little more
-         tolerance when the strings are large.  It is not an appropriate
-         test when comparing fixed length fields such as phone and
-         social security numbers.
-    */
-    char *ying_flag=0, *yang_flag=0;
+    char* ying_flag = 0;
+    char* yang_flag = 0;
 
     double weight;
 
@@ -45,31 +40,66 @@ double _jaro_winkler(const char *ying, const char *yang,
     // ensure that neither string is blank
     ying_length = strlen(ying);
     yang_length = strlen(yang);
-    if (!ying_length || !yang_length) return 0;
-
-    search_range = min_len = (ying_length > yang_length) ? ying_length : yang_length;
+    if (ying_length == 0 || yang_length == 0)
+    {
+        return 0;
+    }
+    if (ying_length > yang_length)
+    {
+        min_len = ying_length;
+    }
+    else
+    {
+        min_len = yang_length;
+    }
+    search_range = min_len;
 
     // Blank out the flags
     ying_flag = alloca(ying_length + 1);
-    if (!ying_flag) return NaN;
+    if (!ying_flag)
+    {
+        return NaN;
+    }
 
     yang_flag = alloca(yang_length + 1);
-    if (!yang_flag) return NaN;
+    if (!yang_flag)
+    {
+        return NaN;
+    }
 
     memset(ying_flag, 0, ying_length + 1);
     memset(yang_flag, 0, yang_length + 1);
 
-    search_range = (search_range/2) - 1;
-    if (search_range < 0) search_range = 0;
-
+    search_range = (search_range / 2) - 1;
+    if (search_range < 0)
+    {
+        search_range = 0;
+    }
 
     // Looking only within the search range, count and flag the matched pairs.
     common_chars = 0;
-    for (i = 0; i < ying_length; i++) {
-        lowlim = (i >= search_range) ? i - search_range : 0;
-        hilim = (i + search_range <= yang_length-1) ? (i + search_range) : yang_length-1;
-        for (j = lowlim; j <= hilim; j++)  {
-            if (!yang_flag[j] && yang[j] == ying[i]) {
+    for (i = 0; i < ying_length; i++)
+    {
+        if (i >= search_range)
+        {
+            lowlim = i - search_range;
+        }
+        else
+        {
+            lowlim = 0;
+        }
+        if (i + search_range <= yang_length - 1)
+        {
+            hilim = i + search_range;
+        }
+        else
+        {
+            hilim = yang_length - 1;
+        }
+        for (j = lowlim; j <= hilim; j++)
+        {
+            if (!yang_flag[j] && yang[j] == ying[i])
+            {
                 yang_flag[j] = 1;
                 ying_flag[i] = 1;
                 common_chars++;
@@ -79,19 +109,27 @@ double _jaro_winkler(const char *ying, const char *yang,
     }
 
     // If no characters in common - return
-    if (!common_chars) return 0;
-
+    if (common_chars == 0)
+    {
+        return 0;
+    }
     // Count the number of transpositions
-    k = trans_count = 0;
-    for (i = 0; i < ying_length; i++) {
-        if (ying_flag[i]) {
-            for (j = k; j < yang_length; j++) {
-                if (yang_flag[j]) {
+    k = 0;
+    trans_count = 0;
+    for (i = 0; i < ying_length; i++)
+    {
+        if (ying_flag[i])
+        {
+            for (j = k; j < yang_length; j++)
+            {
+                if (yang_flag[j])
+                {
                     k = j + 1;
                     break;
                 }
             }
-            if (ying[i] != yang[j]) {
+            if (ying[i] != yang[j])
+            {
                 trans_count++;
             }
         }
@@ -103,15 +141,33 @@ double _jaro_winkler(const char *ying, const char *yang,
     // Main weight computation.
     weight= common_chars / ((double) ying_length) + common_chars / ((double) yang_length)
         + ((double) (common_chars - trans_count)) / ((double) common_chars);
-    weight /=  3.0;
+    weight /= 3.0;
 
     // Continue to boost the weight if the strings are similar
-    if (winklerize && weight > 0.7) {
-
+    if (winklerize && weight > 0.7)
+    {
         // Adjust for having up to the first 4 characters in common
-        j = (min_len >= 4) ? 4 : min_len;
-        for (i=0; ((i<j) && (ying[i] == yang[i]) && (NOTNUM(ying[i]))); i++);
-        if (i) {
+        if (min_len >= 4)
+        {
+            j = 4;
+        }
+        else
+        {
+            j = min_len;
+        }
+        for (i = 0; i < j; i++)
+        {
+            if (ying[i] != yang[i])
+            {
+                break;
+            }
+            if (!NOTNUM(ying[i]))
+            {
+                break;
+            }
+        }
+        if (i)
+        {
             weight += i * 0.1 * (1.0 - weight);
         }
 
@@ -119,10 +175,12 @@ double _jaro_winkler(const char *ying, const char *yang,
         /* After agreeing beginning chars, at least two more must agree and
            the agreeing characters must be > .5 of remaining characters.
         */
-        if ((long_tolerance) && (min_len>4) && (common_chars>i+1) && (2*common_chars>=min_len+i)) {
-            if (NOTNUM(ying[0])) {
-                weight += (double) (1.0-weight) *
-                    ((double) (common_chars-i-1) / ((double) (ying_length+yang_length-i*2+2)));
+        if ((long_tolerance) && (min_len > 4) && (common_chars > i + 1) && (2 * common_chars >= min_len + i))
+        {
+            if (NOTNUM(ying[0]))
+            {
+                weight += (double) (1.0 - weight) *
+                    ((double) (common_chars - i - 1) / ((double) (ying_length + yang_length - i * 2 + 2)));
             }
         }
     }
@@ -143,6 +201,7 @@ double jaro_distance(const char *ying, const char *yang)
 
 float jaro_average(const char* ying, const char* yang)
 {
+    //TODO: Make this more efficient by computing the average within a single calculation.
 	double winkler_metric = jaro_winkler(ying, yang, false);
 	double distance_metric = jaro_distance(ying, yang);
 	return 0.5f * (winkler_metric + distance_metric);

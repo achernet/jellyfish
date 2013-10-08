@@ -2,7 +2,8 @@
 #include <math.h>
 #include "jellyfish.h"
 
-struct jellyfish_state {
+struct jellyfish_state
+{
     PyObject *unicodedata_normalize;
 };
 
@@ -25,28 +26,32 @@ static struct jellyfish_state _state;
  * If passed a PyUnicode, the returned object will be NFKD UTF-8.
  * If passed a PyString or PyBytes no conversion is done.
  */
-static inline PyObject* normalize(PyObject *mod, PyObject *pystr) {
+static inline PyObject* normalize(PyObject *mod, PyObject *pystr)
+{
     PyObject *unicodedata_normalize;
     PyObject *normalized;
     PyObject *utf8;
 
 #if PY_MAJOR_VERSION < 3
-    if (PyString_Check(pystr)) {
+    if (PyString_Check(pystr))
+    {
         Py_INCREF(pystr);
         return pystr;
     }
 #else
-    if (PyBytes_Check(pystr)) {
+    if (PyBytes_Check(pystr))
+    {
         Py_INCREF(pystr);
         return pystr;
     }
 #endif
 
-    if (PyUnicode_Check(pystr)) {
+    if (PyUnicode_Check(pystr))
+    {
         unicodedata_normalize = GETSTATE(mod)->unicodedata_normalize;
-        normalized = PyObject_CallFunction(unicodedata_normalize,
-                                           "sO", "NFKD", pystr);
-        if (!normalized) {
+        normalized = PyObject_CallFunction(unicodedata_normalize, "sO", "NFKD", pystr);
+        if (!normalized)
+        {
             return NULL;
         }
         utf8 = PyUnicode_AsUTF8String(normalized);
@@ -58,18 +63,19 @@ static inline PyObject* normalize(PyObject *mod, PyObject *pystr) {
     return NULL;
 }
 
-static PyObject * jellyfish_jaro_winkler(PyObject *self, PyObject *args,
-    PyObject *keywds)
+static PyObject * jellyfish_jaro_winkler(PyObject *self, PyObject *args)
 {
     const char *s1, *s2;
     double result;
 
-    if (!PyArg_ParseTuple(args, "ss", &s1, &s2)) {
+    if (!PyArg_ParseTuple(args, "ss", &s1, &s2))
+    {
         return NULL;
     }
 
     result = jaro_winkler(s1, s2, false);
-    if (isnan(result)) {
+    if (isnan(result))
+    {
         PyErr_NoMemory();
         return NULL;
     }
@@ -77,18 +83,19 @@ static PyObject * jellyfish_jaro_winkler(PyObject *self, PyObject *args,
     return Py_BuildValue("d", result);
 }
 
-static PyObject * jellyfish_jaro_distance(PyObject *self, PyObject *args,
-    PyObject *keywds)
+static PyObject* jellyfish_jaro_distance(PyObject *self, PyObject *args)
 {
     const char *s1, *s2;
     double result;
 
-    if (!PyArg_ParseTuple(args, "ss", &s1, &s2)) {
+    if (!PyArg_ParseTuple(args, "ss", &s1, &s2))
+    {
         return NULL;
     }
 
     result = jaro_distance(s1, s2);
-    if (isnan(result)) {
+    if (isnan(result))
+    {
         PyErr_NoMemory();
         return NULL;
     }
@@ -96,7 +103,7 @@ static PyObject * jellyfish_jaro_distance(PyObject *self, PyObject *args,
     return Py_BuildValue("d", result);
 }
 
-static PyObject* jellyfish_jaro_average(PyObject* self, PyObject* args, PyObject* keywds)
+static PyObject* jellyfish_jaro_average(PyObject* self, PyObject* args)
 {
     const char* s1;
     const char* s2;
@@ -115,13 +122,13 @@ static PyObject* jellyfish_jaro_average(PyObject* self, PyObject* args, PyObject
     return Py_BuildValue("f", result);
 }
 
-static PyObject * jellyfish_hamming_distance(PyObject *self, PyObject *args,
-                                          PyObject *keywds)
+static PyObject * jellyfish_hamming_distance(PyObject *self, PyObject *args)
 {
     const char *s1, *s2;
     unsigned result;
 
-    if (!PyArg_ParseTuple(args, "ss", &s1, &s2)) {
+    if (!PyArg_ParseTuple(args, "ss", &s1, &s2))
+    {
         return NULL;
     }
 
@@ -135,12 +142,14 @@ static PyObject* jellyfish_levenshtein_distance(PyObject *self, PyObject *args)
     const char *s1, *s2;
     int result;
 
-    if (!PyArg_ParseTuple(args, "ss", &s1, &s2)) {
+    if (!PyArg_ParseTuple(args, "ss", &s1, &s2))
+    {
         return NULL;
     }
 
     result = levenshtein_distance(s1, s2);
-    if (result == -1) {
+    if (result == -1)
+    {
         // levenshtein_distance only returns failure code (-1) on
         // failed malloc
         PyErr_NoMemory();
@@ -150,18 +159,19 @@ static PyObject* jellyfish_levenshtein_distance(PyObject *self, PyObject *args)
     return Py_BuildValue("i", result);
 }
 
-static PyObject* jellyfish_damerau_levenshtein_distance(PyObject *self,
-                                                     PyObject *args)
+static PyObject* jellyfish_damerau_levenshtein_distance(PyObject *self, PyObject *args)
 {
     const char *s1, *s2;
     int result;
 
-    if (!PyArg_ParseTuple(args, "ss", &s1, &s2)) {
+    if (!PyArg_ParseTuple(args, "ss", &s1, &s2))
+    {
         return NULL;
     }
 
     result = damerau_levenshtein_distance(s1, s2);
-    if (result == -1) {
+    if (result == -1)
+    {
         PyErr_NoMemory();
         return NULL;
     }
@@ -176,19 +186,22 @@ static PyObject* jellyfish_soundex(PyObject *self, PyObject *args)
     PyObject* ret;
     char *result;
 
-    if (!PyArg_ParseTuple(args, "O", &pystr)) {
+    if (!PyArg_ParseTuple(args, "O", &pystr))
+    {
         return NULL;
     }
 
     normalized = normalize(self, pystr);
-    if (!normalized) {
+    if (!normalized)
+    {
         return NULL;
     }
 
     result = soundex(UTF8_BYTES(normalized));
     Py_DECREF(normalized);
 
-    if (!result) {
+    if (!result)
+    {
         // soundex only fails on bad malloc
         PyErr_NoMemory();
         return NULL;
@@ -207,19 +220,22 @@ static PyObject* jellyfish_metaphone(PyObject *self, PyObject *args)
     PyObject *ret;
     char *result;
 
-    if (!PyArg_ParseTuple(args, "O", &pystr)) {
+    if (!PyArg_ParseTuple(args, "O", &pystr))
+    {
         return NULL;
     }
 
     normalized = normalize(self, pystr);
-    if (!normalized) {
+    if (!normalized)
+    {
         return NULL;
     }
 
-    result = metaphone((const char*)UTF8_BYTES(normalized));
+    result = metaphone((const char*) UTF8_BYTES(normalized));
     Py_DECREF(normalized);
 
-    if (!result) {
+    if (!result)
+    {
         // metaphone only fails on bad malloc
         PyErr_NoMemory();
         return NULL;
@@ -237,12 +253,14 @@ static PyObject* jellyfish_match_rating_codex(PyObject *self, PyObject *args)
     char *result;
     PyObject *ret;
 
-    if (!PyArg_ParseTuple(args, "s", &str)) {
+    if (!PyArg_ParseTuple(args, "s", &str))
+    {
         return NULL;
     }
 
     result = match_rating_codex(str);
-    if (!result) {
+    if (!result)
+    {
         PyErr_NoMemory();
         return NULL;
     }
@@ -253,25 +271,29 @@ static PyObject* jellyfish_match_rating_codex(PyObject *self, PyObject *args)
     return ret;
 }
 
-static PyObject* jellyfish_match_rating_comparison(PyObject *self,
-                                                   PyObject *args)
+static PyObject* jellyfish_match_rating_comparison(PyObject *self, PyObject *args)
 {
     const char *str1, *str2;
     int result;
 
-    if (!PyArg_ParseTuple(args, "ss", &str1, &str2)) {
+    if (!PyArg_ParseTuple(args, "ss", &str1, &str2))
+    {
         return NULL;
     }
 
     result = match_rating_comparison(str1, str2);
-    if (result == -1) {
+    if (result == -1)
+    {
         PyErr_NoMemory();
         return NULL;
     }
 
-    if (result) {
+    if (result)
+    {
         Py_RETURN_TRUE;
-    } else {
+    }
+    else
+    {
         Py_RETURN_FALSE;
     }
 }
@@ -282,12 +304,14 @@ static PyObject* jellyfish_nysiis(PyObject *self, PyObject *args)
     char *result;
     PyObject *ret;
 
-    if (!PyArg_ParseTuple(args, "s", &str)) {
+    if (!PyArg_ParseTuple(args, "s", &str))
+    {
         return NULL;
     }
 
     result = nysiis(str);
-    if (!result) {
+    if (!result)
+    {
         PyErr_NoMemory();
         return NULL;
     }
@@ -306,18 +330,21 @@ static PyObject* jellyfish_porter_stem(PyObject *self, PyObject *args)
     struct stemmer *z;
     int end;
 
-    if (!PyArg_ParseTuple(args, "s", &str)) {
+    if (!PyArg_ParseTuple(args, "s", &str))
+    {
         return NULL;
     }
 
     z = create_stemmer();
-    if (!z) {
+    if (!z)
+    {
         PyErr_NoMemory();
         return NULL;
     }
 
     result = strdup(str);
-    if (!result) {
+    if (!result)
+    {
         free_stemmer(z);
         PyErr_NoMemory();
         return NULL;
@@ -334,66 +361,102 @@ static PyObject* jellyfish_porter_stem(PyObject *self, PyObject *args)
     return ret;
 }
 
-static PyMethodDef jellyfish_methods[] = {
-    {"jaro_winkler", jellyfish_jaro_winkler, METH_VARARGS,
-     "jaro_winkler(string1, string2, ignore_case=True)\n\n"
-     "Do a Jaro-Winkler string comparison between string1 and string2."},
+static PyMethodDef jellyfish_methods[] =
+{
+    {
+        "jaro_winkler",
+        jellyfish_jaro_winkler,
+        METH_VARARGS,
+        "jaro_winkler(string1, string2, ignore_case=True)\n\nDo a Jaro-Winkler string comparison between "
+        "string1 and string2."
+    },
+    {
+        "jaro_distance",
+        jellyfish_jaro_distance,
+        METH_VARARGS,
+        "jaro_distance(string1, string2, ignore_case=True)\n\nGet a Jaro string distance metric for string1 "
+        "and string2."
+    },
+    {
+        "jaro_average",
+        jellyfish_jaro_average,
+        METH_VARARGS,
+        "jaro_average(string1, string2, ignore_case=True)\n\nGet the average Jaro metric for string1 and "
+        "string2."
+    },
+    {
+        "hamming_distance",
+        jellyfish_hamming_distance,
+        METH_VARARGS | METH_KEYWORDS,
+        "hamming_distance(string1, string2, ignore_case=True)\n\nCompute the Hamming distance between "
+        "string1 and string2."
+    },
+    {
+        "levenshtein_distance",
+        jellyfish_levenshtein_distance,
+        METH_VARARGS,
+        "levenshtein_distance(string1, string2)\n\nCompute the Levenshtein distance between string1 and "
+        "string2."
+    },
 
-    {"jaro_distance", jellyfish_jaro_distance, METH_VARARGS,
-     "jaro_distance(string1, string2, ignore_case=True)\n\n"
-     "Get a Jaro string distance metric for string1 and string2."},
+    {
+        "damerau_levenshtein_distance",
+        jellyfish_damerau_levenshtein_distance,
+        METH_VARARGS,
+        "damerau_levenshtein_distance(string1, string2)\n\n"
+        "Compute the Damerau-Levenshtein distance between string1 and string2."
+    },
+    {
+        "soundex",
+        jellyfish_soundex,
+        METH_VARARGS,
+        "soundex(string)\n\n"
+        "Calculate the soundex code for a given name."
+    },
+    {
+        "metaphone",
+        jellyfish_metaphone,
+        METH_VARARGS,
+        "metaphone(string)\n\n"
+        "Calculate the metaphone representation of a given string."
+    },
+    {
+        "match_rating_codex",
+        jellyfish_match_rating_codex,
+        METH_VARARGS,
+        "match_rating_codex(string)\n\n"
+        "Calculate the Match Rating Approach representation of a given string."
+    },
+    {
+        "match_rating_comparison",
+        jellyfish_match_rating_comparison,
+        METH_VARARGS,
+        "match_rating_comparison(string, string)\n\n"
+            "Compute the Match Rating Approach similarity between string1 and string2."
+    },
+    {
+        "nysiis",
+        jellyfish_nysiis,
+        METH_VARARGS,
+        "nysiis(string)\n\n"
+        "Compute the NYSIIS (New York State Identification and Intelligence\n"
+        "System) code for a string."
+    },
+    {
+        "porter_stem",
+        jellyfish_porter_stem,
+        METH_VARARGS,
+        "porter_stem(string)\n\n"
+        "Return the result of running the Porter stemming algorithm on a single-word string."
+    },
 
-    {"jaro_average", jellyfish_jaro_average, METH_VARARGS,
-     "jaro_average(string1, string2, ignore_case=True)\n\n"
-         "Get the average Jaro metric for string1 and string2."},
-
-    {"hamming_distance", jellyfish_hamming_distance, METH_VARARGS,
-     "hamming_distance(string1, string2, ignore_case=True)\n\n"
-     "Compute the Hamming distance between string1 and string2."},
-
-    {"levenshtein_distance", jellyfish_levenshtein_distance, METH_VARARGS,
-     "levenshtein_distance(string1, string2)\n\n"
-     "Compute the Levenshtein distance between string1 and string2."},
-
-    {"damerau_levenshtein_distance", jellyfish_damerau_levenshtein_distance,
-     METH_VARARGS,
-     "damerau_levenshtein_distance(string1, string2)\n\n"
-     "Compute the Damerau-Levenshtein distance between string1 and string2."},
-
-    {"soundex", jellyfish_soundex, METH_VARARGS,
-     "soundex(string)\n\n"
-     "Calculate the soundex code for a given name."},
-
-    {"metaphone", jellyfish_metaphone, METH_VARARGS,
-     "metaphone(string)\n\n"
-     "Calculate the metaphone representation of a given string."},
-
-    {"match_rating_codex", jellyfish_match_rating_codex, METH_VARARGS,
-     "match_rating_codex(string)\n\n"
-     "Calculate the Match Rating Approach representation of a given string."},
-
-    {"match_rating_comparison", jellyfish_match_rating_comparison, METH_VARARGS,
-     "match_rating_comparison(string, string)\n\n"
-     "Compute the Match Rating Approach similarity between string1 and"
-     "string2."},
-
-    {"nysiis", jellyfish_nysiis, METH_VARARGS,
-     "nysiis(string)\n\n"
-     "Compute the NYSIIS (New York State Identification and Intelligence\n"
-     "System) code for a string."},
-
-    {"porter_stem", jellyfish_porter_stem, METH_VARARGS,
-     "porter_stem(string)\n\n"
-     "Return the result of running the Porter stemming algorithm on "
-     "a single-word string."},
-
-    {NULL, NULL, 0, NULL}
-};
+    { NULL, NULL, 0, NULL } };
 
 #if PY_MAJOR_VERSION >= 3
 #define INITERROR return NULL
 
-static struct PyModuleDef moduledef = {
+static struct PyModuleDef moduledef =
+{
     PyModuleDef_HEAD_INIT,
     "strfry",
     NULL,
@@ -421,17 +484,18 @@ PyMODINIT_FUNC initjellyfish(void)
     PyObject *module = Py_InitModule("jellyfish", jellyfish_methods);
 #endif
 
-    if (module == NULL) {
+    if (module == NULL)
+    {
         INITERROR;
     }
 
     unicodedata = PyImport_ImportModule("unicodedata");
-    if (!unicodedata) {
+    if (!unicodedata)
+    {
         INITERROR;
     }
 
-    GETSTATE(module)->unicodedata_normalize =
-        PyObject_GetAttrString(unicodedata, "normalize");
+    GETSTATE(module)->unicodedata_normalize = PyObject_GetAttrString(unicodedata, "normalize");
     Py_DECREF(unicodedata);
 
 #if PY_MAJOR_VERSION >= 3

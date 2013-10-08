@@ -8,25 +8,23 @@ class JellyfishTestCase(unittest.TestCase):
 
     def test_jaro_winkler(self):
         cases = [("dixon", "dicksonx", 0.8133),
-                 ("dixon", "dicksonx", 0.8133),
+                 ("dicksonx", "dixon", 0.8133),
                  ("martha", "marhta", 0.9611),
-                 ("dwayne", "duane", 0.84),
-                 ]
+                 ("dwayne", "duane", 0.84)]
 
         for (s1, s2, value) in cases:
-            self.assertAlmostEqual(jellyfish.jaro_winkler(s1, s2), value,
-                                   places=4)
+            actual = jellyfish.jaro_winkler(s1, s2)
+            self.assertAlmostEqual(actual, value, places=4)
 
     def test_jaro_distance(self):
-        cases = [("dixon", "dicksonx", 0.767),
+        cases = [("dicksonx", "dixon", 0.767),
                  ("dixon", "dicksonx", 0.767),
                  ("martha", "marhta", 0.944),
-                 ("dwayne", "duane", 0.822),
-                 ]
+                 ("dwayne", "duane", 0.822)]
 
         for (s1, s2, value) in cases:
-            self.assertAlmostEqual(jellyfish.jaro_distance(s1, s2), value,
-                                   places=3)
+            actual = jellyfish.jaro_distance(s1, s2)
+            self.assertAlmostEqual(actual, value, places=3)
 
     def test_hamming_distance(self):
         cases = [("", "", 0),
@@ -35,22 +33,22 @@ class JellyfishTestCase(unittest.TestCase):
                  ("acc", "abc", 1),
                  ("abcd", "abc", 1),
                  ("abc", "abcd", 1),
-                 ("testing", "this is a test", 13),
-                 ]
+                 ("testing", "this is a test", 13)]
 
         for (s1, s2, value) in cases:
-            self.assertEqual(jellyfish.hamming_distance(s1, s2), value)
+            actual = jellyfish.hamming_distance(s1, s2)
+            self.assertEqual(actual, value)
 
     def test_levenshtein_distance(self):
         cases = [("", "", 0),
                  ("abc", "", 3),
                  ("bc", "abc", 1),
                  ("kitten", "sitting", 3),
-                 ("Saturday", "Sunday", 3),
-                 ]
+                 ("Saturday", "Sunday", 3)]
 
         for (s1, s2, value) in cases:
-            self.assertEqual(jellyfish.levenshtein_distance(s1, s2), value)
+            actual = jellyfish.levenshtein_distance(s1, s2)
+            self.assertEqual(actual, value)
 
     def test_damerau_levenshtein_distance(self):
         cases = [("", "", 0),
@@ -72,11 +70,11 @@ class JellyfishTestCase(unittest.TestCase):
                  ("Tymczak", "T522"),
                  ("", ""),
                  ("A", "A000"),
-                 (u"Çáŕẗéř", "C636"),
-                 ]
+                 (u"Çáŕẗéř", "C636")]
 
         for (s1, code) in cases:
-            self.assertEqual(jellyfish.soundex(s1), code)
+            actual = jellyfish.soundex(s1)
+            self.assertEqual(actual, code)
 
     def test_metaphone(self):
         cases = [("metaphone", 'MTFN'),
