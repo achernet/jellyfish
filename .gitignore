@@ -1,9 +1,10 @@
 build/
 dist/
-strfry.egg-info/
+jellyfish.egg-info/
 *.so
 *.swp
 *.pyc
 *.DS_Store
 *~
+.tox/
 /Default

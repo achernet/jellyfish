@@ -127,8 +127,7 @@ static PyObject * jellyfish_hamming_distance(PyObject *self, PyObject *args)
     const char *s1, *s2;
     unsigned result;
 
-    if (!PyArg_ParseTuple(args, "ss", &s1, &s2))
-    {
+    if (!PyArg_ParseTuple(args, "ss", &s1, &s2)) {
         return NULL;
     }
 
@@ -142,14 +141,12 @@ static PyObject* jellyfish_levenshtein_distance(PyObject *self, PyObject *args)
     const char *s1, *s2;
     int result;
 
-    if (!PyArg_ParseTuple(args, "ss", &s1, &s2))
-    {
+    if (!PyArg_ParseTuple(args, "ss", &s1, &s2)) {
         return NULL;
     }
 
     result = levenshtein_distance(s1, s2);
-    if (result == -1)
-    {
+    if (result == -1) {
         // levenshtein_distance only returns failure code (-1) on
         // failed malloc
         PyErr_NoMemory();
@@ -159,19 +156,18 @@ static PyObject* jellyfish_levenshtein_distance(PyObject *self, PyObject *args)
     return Py_BuildValue("i", result);
 }
 
-static PyObject* jellyfish_damerau_levenshtein_distance(PyObject *self, PyObject *args)
+static PyObject* jellyfish_damerau_levenshtein_distance(PyObject *self,
+                                                     PyObject *args)
 {
     const char *s1, *s2;
     int result;
 
-    if (!PyArg_ParseTuple(args, "ss", &s1, &s2))
-    {
+    if (!PyArg_ParseTuple(args, "ss", &s1, &s2)) {
         return NULL;
     }
 
     result = damerau_levenshtein_distance(s1, s2);
-    if (result == -1)
-    {
+    if (result == -1) {
         PyErr_NoMemory();
         return NULL;
     }
@@ -186,22 +182,19 @@ static PyObject* jellyfish_soundex(PyObject *self, PyObject *args)
     PyObject* ret;
     char *result;
 
-    if (!PyArg_ParseTuple(args, "O", &pystr))
-    {
+    if (!PyArg_ParseTuple(args, "O", &pystr)) {
         return NULL;
     }
 
     normalized = normalize(self, pystr);
-    if (!normalized)
-    {
+    if (!normalized) {
         return NULL;
     }
 
     result = soundex(UTF8_BYTES(normalized));
     Py_DECREF(normalized);
 
-    if (!result)
-    {
+    if (!result) {
         // soundex only fails on bad malloc
         PyErr_NoMemory();
         return NULL;
@@ -220,22 +213,19 @@ static PyObject* jellyfish_metaphone(PyObject *self, PyObject *args)
     PyObject *ret;
     char *result;
 
-    if (!PyArg_ParseTuple(args, "O", &pystr))
-    {
+    if (!PyArg_ParseTuple(args, "O", &pystr)) {
         return NULL;
     }
 
     normalized = normalize(self, pystr);
-    if (!normalized)
-    {
+    if (!normalized) {
         return NULL;
     }
 
-    result = metaphone((const char*) UTF8_BYTES(normalized));
+    result = metaphone((const char*)UTF8_BYTES(normalized));
     Py_DECREF(normalized);
 
-    if (!result)
-    {
+    if (!result) {
         // metaphone only fails on bad malloc
         PyErr_NoMemory();
         return NULL;
@@ -253,14 +243,12 @@ static PyObject* jellyfish_match_rating_codex(PyObject *self, PyObject *args)
     char *result;
     PyObject *ret;
 
-    if (!PyArg_ParseTuple(args, "s", &str))
-    {
+    if (!PyArg_ParseTuple(args, "s", &str)) {
         return NULL;
     }
 
     result = match_rating_codex(str);
-    if (!result)
-    {
+    if (!result) {
         PyErr_NoMemory();
         return NULL;
     }
@@ -271,29 +259,25 @@ static PyObject* jellyfish_match_rating_codex(PyObject *self, PyObject *args)
     return ret;
 }
 
-static PyObject* jellyfish_match_rating_comparison(PyObject *self, PyObject *args)
+static PyObject* jellyfish_match_rating_comparison(PyObject *self,
+                                                   PyObject *args)
 {
     const char *str1, *str2;
     int result;
 
-    if (!PyArg_ParseTuple(args, "ss", &str1, &str2))
-    {
+    if (!PyArg_ParseTuple(args, "ss", &str1, &str2)) {
         return NULL;
     }
 
     result = match_rating_comparison(str1, str2);
-    if (result == -1)
-    {
+    if (result == -1) {
         PyErr_NoMemory();
         return NULL;
     }
 
-    if (result)
-    {
+    if (result) {
         Py_RETURN_TRUE;
-    }
-    else
-    {
+    } else {
         Py_RETURN_FALSE;
     }
 }
@@ -304,14 +288,12 @@ static PyObject* jellyfish_nysiis(PyObject *self, PyObject *args)
     char *result;
     PyObject *ret;
 
-    if (!PyArg_ParseTuple(args, "s", &str))
-    {
+    if (!PyArg_ParseTuple(args, "s", &str)) {
         return NULL;
     }
 
     result = nysiis(str);
-    if (!result)
-    {
+    if (!result) {
         PyErr_NoMemory();
         return NULL;
     }
@@ -330,21 +312,18 @@ static PyObject* jellyfish_porter_stem(PyObject *self, PyObject *args)
     struct stemmer *z;
     int end;
 
-    if (!PyArg_ParseTuple(args, "s", &str))
-    {
+    if (!PyArg_ParseTuple(args, "s", &str)) {
         return NULL;
     }
 
     z = create_stemmer();
-    if (!z)
-    {
+    if (!z) {
         PyErr_NoMemory();
         return NULL;
     }
 
     result = strdup(str);
-    if (!result)
-    {
+    if (!result) {
         free_stemmer(z);
         PyErr_NoMemory();
         return NULL;
@@ -367,28 +346,28 @@ static PyMethodDef jellyfish_methods[] =
         "jaro_winkler",
         jellyfish_jaro_winkler,
         METH_VARARGS,
-        "jaro_winkler(string1, string2, ignore_case=True)\n\nDo a Jaro-Winkler string comparison between "
+        "jaro_winkler(string1, string2)\n\nDo a Jaro-Winkler string comparison between "
         "string1 and string2."
     },
     {
         "jaro_distance",
         jellyfish_jaro_distance,
         METH_VARARGS,
-        "jaro_distance(string1, string2, ignore_case=True)\n\nGet a Jaro string distance metric for string1 "
+        "jaro_distance(string1, string2)\n\nGet a Jaro string distance metric for string1 "
         "and string2."
     },
     {
         "jaro_average",
         jellyfish_jaro_average,
         METH_VARARGS,
-        "jaro_average(string1, string2, ignore_case=True)\n\nGet the average Jaro metric for string1 and "
+        "jaro_average(string1, string2)\n\nGet the average Jaro metric for string1 and "
         "string2."
     },
     {
         "hamming_distance",
         jellyfish_hamming_distance,
         METH_VARARGS | METH_KEYWORDS,
-        "hamming_distance(string1, string2, ignore_case=True)\n\nCompute the Hamming distance between "
+        "hamming_distance(string1, string2)\n\nCompute the Hamming distance between "
         "string1 and string2."
     },
     {
@@ -458,7 +437,7 @@ static PyMethodDef jellyfish_methods[] =
 static struct PyModuleDef moduledef =
 {
     PyModuleDef_HEAD_INIT,
-    "strfry",
+    "jellyfish.cjellyfish",
     NULL,
     sizeof(struct jellyfish_state),
     jellyfish_methods,
@@ -468,12 +447,12 @@ static struct PyModuleDef moduledef =
     NULL
 };
 
-PyObject* PyInit_jellyfish(void)
+PyObject* PyInit_cjellyfish(void)
 #else
 
 #define INITERROR return
 
-PyMODINIT_FUNC initjellyfish(void)
+PyMODINIT_FUNC initcjellyfish(void)
 #endif
 {
     PyObject *unicodedata;
@@ -481,7 +460,7 @@ PyMODINIT_FUNC initjellyfish(void)
 #if PY_MAJOR_VERSION >= 3
     PyObject *module = PyModule_Create(&moduledef);
 #else
-    PyObject *module = Py_InitModule("jellyfish", jellyfish_methods);
+    PyObject *module = Py_InitModule("jellyfish.cjellyfish", jellyfish_methods);
 #endif
 
     if (module == NULL)
