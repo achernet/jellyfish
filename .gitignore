@@ -5,6 +5,7 @@ jellyfish.egg-info/
 *.swp
 *.pyc
 *.DS_Store
+*.orig
 *~
 .tox/
 /Default
