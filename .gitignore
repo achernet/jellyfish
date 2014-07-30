@@ -9,3 +9,5 @@ jellyfish.egg-info/
 *~
 .tox/
 /Default
+.project
+.pydevproject
